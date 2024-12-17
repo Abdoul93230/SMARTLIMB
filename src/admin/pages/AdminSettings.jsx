@@ -1,16 +1,30 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Save,
-  Globe,
-  Mail,
-  Bell,
-  Shield,
-  User
-} from 'lucide-react';
+import { Save, Globe, Mail, Bell, Shield } from 'lucide-react';
+import { useAdmin } from '../../contexts/AdminContext';
 
 export default function AdminSettings() {
+  const { settings, updateSettings } = useAdmin();
+  const [formData, setFormData] = useState(settings);
+
+  const handleChange = (section, field, value) => {
+    setFormData({
+      ...formData,
+      [section]: {
+        ...formData[section],
+        [field]: value
+      }
+    });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    updateSettings(formData);
+    alert('Paramètres mis à jour avec succès !');
+  };
+
   return (
-    <div className="space-y-8">
+    <form onSubmit={handleSubmit} className="space-y-8">
       {/* En-tête */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Paramètres</h1>
@@ -39,8 +53,9 @@ export default function AdminSettings() {
               </label>
               <input
                 type="text"
+                value={formData.general.siteName}
+                onChange={(e) => handleChange('general', 'siteName', e.target.value)}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                defaultValue="SmartLimb"
               />
             </div>
 
@@ -50,8 +65,9 @@ export default function AdminSettings() {
               </label>
               <textarea
                 rows="3"
+                value={formData.general.description}
+                onChange={(e) => handleChange('general', 'description', e.target .target.value)}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                defaultValue="Innovation technologique au service de l'humanité"
               />
             </div>
 
@@ -59,9 +75,13 @@ export default function AdminSettings() {
               <label className="block text-sm font-medium text-gray-700">
                 Langue par défaut
               </label>
-              <select className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
-                <option>Français</option>
-                <option>English</option>
+              <select 
+                value={formData.general.language}
+                onChange={(e) => handleChange('general', 'language', e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+              >
+                <option value="Français">Français</option>
+                <option value="English">English</option>
               </select>
             </div>
           </div>
@@ -86,8 +106,9 @@ export default function AdminSettings() {
               </label>
               <input
                 type="email"
+                value={formData.contact.email}
+                onChange={(e) => handleChange('contact', 'email', e.target.value)}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                defaultValue="contact@smartlimb.com"
               />
             </div>
 
@@ -97,8 +118,9 @@ export default function AdminSettings() {
               </label>
               <input
                 type="tel"
+                value={formData.contact.phone}
+                onChange={(e) => handleChange('contact', 'phone', e.target.value)}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                defaultValue="+227 87 72 75 01"
               />
             </div>
 
@@ -108,8 +130,9 @@ export default function AdminSettings() {
               </label>
               <textarea
                 rows="3"
+                value={formData.contact.address}
+                onChange={(e) => handleChange('contact', 'address', e.target.value)}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                defaultValue="Niamey, Niger"
               />
             </div>
           </div>
@@ -135,11 +158,16 @@ export default function AdminSettings() {
               </span>
               <button
                 type="button"
-                className="bg-purple-600 relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-                role="switch"
-                aria-checked="true"
+                className={`${
+                  formData.notifications.newApplications ? 'bg-purple-600' : 'bg-gray-200'
+                } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2`}
+                onClick={() => handleChange('notifications', 'newApplications', !formData.notifications.newApplications)}
               >
-                <span className="translate-x-5 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                <span 
+                  className={`${
+                    formData.notifications.newApplications ? 'translate-x-5' : 'translate-x-0'
+                  } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
+                />
               </button>
             </div>
 
@@ -150,11 +178,16 @@ export default function AdminSettings() {
               </span>
               <button
                 type="button"
-                className="bg-gray-200 relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-                role="switch"
-                aria-checked="false"
+                className={`${
+                  formData.notifications.newComments ? 'bg-purple-600' : 'bg-gray-200'
+                } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2`}
+                onClick={() => handleChange('notifications', 'newComments', !formData.notifications.newComments)}
               >
-                <span className="translate-x-0 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                <span 
+                  className={`${
+                    formData.notifications.newComments ? 'translate-x-5' : 'translate-x-0'
+                  } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
+                />
               </button>
             </div>
           </div>
@@ -208,11 +241,14 @@ export default function AdminSettings() {
 
       {/* Bouton de sauvegarde */}
       <div className="flex justify-end">
-        <button className="bg-purple-600 text-white px-6 py-2 rounded-lg flex items-center hover:bg-purple-700">
+        <button 
+          type="submit"
+          className="bg-purple-600 text-white px-6 py-2 rounded-lg flex items-center hover:bg-purple-700"
+        >
           <Save className="h-5 w-5 mr-2" />
           Sauvegarder les modifications
         </button>
       </div>
-    </div>
+    </form>
   );
 }
