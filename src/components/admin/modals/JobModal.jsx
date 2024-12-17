@@ -14,6 +14,15 @@ export default function JobModal({ isOpen, onClose, onSubmit, job }) {
   useEffect(() => {
     if (job) {
       setFormData(job);
+    } else {
+      setFormData({
+        title: '',
+        type: '',
+        location: '',
+        department: '',
+        status: '',
+        description: ''
+      });
     }
   }, [job]);
 
