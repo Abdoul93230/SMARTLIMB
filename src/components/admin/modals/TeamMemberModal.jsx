@@ -14,6 +14,15 @@ export default function TeamMemberModal({ isOpen, onClose, onSubmit, member }) {
   useEffect(() => {
     if (member) {
       setFormData(member);
+    } else {
+      setFormData({
+        name: '',
+        role: '',
+        department: '',
+        email: '',
+        phone: '',
+        image: ''
+      });
     }
   }, [member]);
 
