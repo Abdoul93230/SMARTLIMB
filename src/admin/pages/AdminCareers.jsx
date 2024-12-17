@@ -1,40 +1,40 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Plus, 
-  Search, 
-  Edit2, 
-  Trash2,
-  Users,
-  Calendar,
-  Filter
-} from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Users, Calendar, Filter } from 'lucide-react';
+import { useAdmin } from '../../contexts/AdminContext';
+import JobModal from '../../components/admin/modals/JobModal';
 
 export default function AdminCareers() {
-  const [selectedJobs, setSelectedJobs] = useState([]);
-  
-  const jobs = [
-    {
-      id: 1,
-      title: "Ingénieur en Robotique",
-      type: "CDI",
-      location: "Niamey, Niger",
-      department: "R&D",
-      applications: 12,
-      status: "Actif",
-      posted: "15 Mars 2024"
-    },
-    {
-      id: 2,
-      title: "Développeur IA",
-      type: "Stage",
-      location: "Niamey, Niger",
-      department: "Tech",
-      applications: 8,
-      status: "Actif",
-      posted: "10 Mars 2024"
+  const { jobs, addJob, updateJob, deleteJob } = useAdmin();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingJob, setEditingJob] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const handleEdit = (job) => {
+    setEditingJob(job);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = (id) => {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette offre ?')) {
+      deleteJob(id);
     }
-  ];
+  };
+
+  const handleSubmit = (formData) => {
+    if (editingJob) {
+      updateJob(editingJob.id, formData);
+    } else {
+      addJob(formData);
+    }
+    setIsModalOpen(false);
+    setEditingJob(null);
+  };
+
+  const filteredJobs = jobs.filter(job =>
+    job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    job.department.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="space-y-8">
@@ -46,7 +46,13 @@ export default function AdminCareers() {
             Gérez les offres d'emploi et les candidatures
           </p>
         </div>
-        <button className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-purple-700">
+        <button 
+          onClick={() => {
+            setEditingJob(null);
+            setIsModalOpen(true);
+          }}
+          className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-purple-700"
+        >
           <Plus className="h-5 w-5 mr-2" />
           Nouvelle offre
         </button>
@@ -65,7 +71,9 @@ export default function AdminCareers() {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Candidatures</p>
-              <p className="mt-1 text-2xl font-semibold text-gray-900">45</p>
+              <p className="mt-1 text-2xl font-semibold text-gray-900">
+                {jobs.reduce((total, job) => total + job.applications, 0)}
+              </p>
             </div>
           </div>
         </motion.div>
@@ -82,7 +90,9 @@ export default function AdminCareers() {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Postes Actifs</p>
-              <p className="mt-1 text-2xl font-semibold text-gray-900">8</p>
+              <p className="mt-1 text-2xl font-semibold text-gray-900">
+                {jobs.filter(job => job.status === 'Actif').length}
+              </p>
             </div>
           </div>
         </motion.div>
@@ -115,6 +125,8 @@ export default function AdminCareers() {
                 <input
                   type="text"
                   placeholder="Rechercher une offre..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
@@ -153,7 +165,7 @@ export default function AdminCareers() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {jobs.map((job, index) => (
+              {filteredJobs.map((job, index) => (
                 <motion.tr
                   key={job.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -191,10 +203,16 @@ export default function AdminCareers() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center space-x-3">
-                      <button className="text-gray-600 hover:text-purple-600">
+                      <button 
+                        onClick={() => handleEdit(job)}
+                        className="text-gray-600 hover:text-purple-600"
+                      >
                         <Edit2 className="h-5 w-5" />
                       </button>
-                      <button className="text-gray-600 hover:text-red-600">
+                      <button 
+                        onClick={() => handleDelete(job.id)}
+                        className="text-gray-600 hover:text-red-600"
+                      >
                         <Trash2 className="h-5 w-5" />
                       </button>
                     </div>
@@ -205,6 +223,17 @@ export default function AdminCareers() {
           </table>
         </div>
       </div>
+
+      {/* Modal */}
+      <JobModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingJob(null);
+        }}
+        onSubmit={handleSubmit}
+        job={editingJob}
+      />
     </div>
   );
 }
