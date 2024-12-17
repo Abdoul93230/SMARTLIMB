@@ -1,35 +1,15 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Plus, 
-  Search, 
-  Edit2, 
-  Trash2,
-  Filter,
-  Download
-} from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Filter, Download } from 'lucide-react';
+import { useAdmin } from '../../contexts/AdminContext';
+import ProductModal from '../../components/admin/modals/ProductModal';
 
 export default function AdminProducts() {
+  const { products, addProduct, updateProduct, deleteProduct } = useAdmin();
   const [selectedProducts, setSelectedProducts] = useState([]);
-  
-  const products = [
-    {
-      id: 1,
-      name: "SmartLimb Pro",
-      category: "Premium",
-      price: "Sur devis",
-      status: "En stock",
-      image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80"
-    },
-    {
-      id: 2,
-      name: "SmartLimb Lite",
-      category: "Standard",
-      price: "Sur devis",
-      status: "En stock",
-      image: "https://images.unsplash.com/photo-1589254065878-42c9da997008?auto=format&fit=crop&q=80"
-    }
-  ];
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const handleSelectProduct = (productId) => {
     setSelectedProducts(prev => 
@@ -38,6 +18,32 @@ export default function AdminProducts() {
         : [...prev, productId]
     );
   };
+
+  const handleEdit = (product) => {
+    setEditingProduct(product);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = (id) => {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) {
+      deleteProduct(id);
+    }
+  };
+
+  const handleSubmit = (formData) => {
+    if (editingProduct) {
+      updateProduct(editingProduct.id, formData);
+    } else {
+      addProduct(formData);
+    }
+    setIsModalOpen(false);
+    setEditingProduct(null);
+  };
+
+  const filteredProducts = products.filter(product =>
+    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.category.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="space-y-8">
@@ -49,7 +55,13 @@ export default function AdminProducts() {
             Gérez votre catalogue de produits
           </p>
         </div>
-        <button className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-purple-700">
+        <button 
+          onClick={() => {
+            setEditingProduct(null);
+            setIsModalOpen(true);
+          }}
+          className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-purple-700"
+        >
           <Plus className="h-5 w-5 mr-2" />
           Nouveau produit
         </button>
@@ -64,6 +76,8 @@ export default function AdminProducts() {
               <input
                 type="text"
                 placeholder="Rechercher un produit..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
@@ -118,7 +132,7 @@ export default function AdminProducts() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {products.map((product, index) => (
+              {filteredProducts.map((product, index) => (
                 <motion.tr
                   key={product.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -162,10 +176,16 @@ export default function AdminProducts() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center space-x-3">
-                      <button className="text-gray-600 hover:text-purple-600">
+                      <button 
+                        onClick={() => handleEdit(product)}
+                        className="text-gray-600 hover:text-purple-600"
+                      >
                         <Edit2 className="h-5 w-5" />
                       </button>
-                      <button className="text-gray-600 hover:text-red-600">
+                      <button 
+                        onClick={() => handleDelete(product.id)}
+                        className="text-gray-600 hover:text-red-600"
+                      >
                         <Trash2 className="h-5 w-5" />
                       </button>
                     </div>
@@ -176,6 +196,17 @@ export default function AdminProducts() {
           </table>
         </div>
       </div>
+
+      {/* Modal */}
+      <ProductModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingProduct(null);
+        }}
+        onSubmit={handleSubmit}
+        product={editingProduct}
+      />
     </div>
   );
 }
