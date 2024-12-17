@@ -1,42 +1,16 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Plus, 
-  Search, 
-  Edit2, 
-  Trash2,
-  Eye,
-  MessageCircle,
-  Filter
-} from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Eye, MessageCircle, Filter } from 'lucide-react';
+import { useAdmin } from '../../contexts/AdminContext';
+//import BlogPostModal from '../components/admin/modals/BlogPostModal';
+import BlogPostModal from '../../components/admin/modals/BlogPostModal';
 
 export default function AdminBlog() {
+  const { blogPosts, addBlogPost, updateBlogPost, deleteBlogPost } = useAdmin();
   const [selectedPosts, setSelectedPosts] = useState([]);
-  
-  const posts = [
-    {
-      id: 1,
-      title: "L'avenir des prothèses myoélectriques en Afrique",
-      author: "Ibrahim Mahamadou",
-      category: "Innovation Médicale",
-      status: "Publié",
-      date: "15 Mars 2024",
-      views: "1.2k",
-      comments: 23,
-      image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80"
-    },
-    {
-      id: 2,
-      title: "Intelligence Artificielle dans le secteur médical nigérien",
-      author: "Aïcha Souleymane",
-      category: "Intelligence Artificielle",
-      status: "Brouillon",
-      date: "10 Mars 2024",
-      views: "956",
-      comments: 15,
-      image: "https://images.unsplash.com/photo-1587620962725-abab7fe55159?auto=format&fit=crop&q=80"
-    }
-  ];
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingPost, setEditingPost] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const handleSelectPost = (postId) => {
     setSelectedPosts(prev => 
@@ -45,6 +19,33 @@ export default function AdminBlog() {
         : [...prev, postId]
     );
   };
+
+  const handleEdit = (post) => {
+    setEditingPost(post);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = (id) => {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer cet article ?')) {
+      deleteBlogPost(id);
+    }
+  };
+
+  const handleSubmit = (formData) => {
+    if (editingPost) {
+      updateBlogPost(editingPost.id, formData);
+    } else {
+      addBlogPost(formData);
+    }
+    setIsModalOpen(false);
+    setEditingPost(null);
+  };
+
+  const filteredPosts = blogPosts.filter(post =>
+    post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    post.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    post.category.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="space-y-8">
@@ -56,7 +57,13 @@ export default function AdminBlog() {
             Gérez vos articles et publications
           </p>
         </div>
-        <button className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-purple-700">
+        <button 
+          onClick={() => {
+            setEditingPost(null);
+            setIsModalOpen(true);
+          }}
+          className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-purple-700"
+        >
           <Plus className="h-5 w-5 mr-2" />
           Nouvel article
         </button>
@@ -71,6 +78,8 @@ export default function AdminBlog() {
               <input
                 type="text"
                 placeholder="Rechercher un article..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
@@ -96,7 +105,7 @@ export default function AdminBlog() {
                     className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
                     onChange={(e) => {
                       if (e.target.checked) {
-                        setSelectedPosts(posts.map(p => p.id));
+                        setSelectedPosts(blogPosts.map(p => p.id));
                       } else {
                         setSelectedPosts([]);
                       }
@@ -124,7 +133,7 @@ export default function AdminBlog() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {posts.map((post, index) => (
+              {filteredPosts.map((post, index) => (
                 <motion.tr
                   key={post.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -188,10 +197,16 @@ export default function AdminBlog() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center space-x-3">
-                      <button className="text-gray-600 hover:text-purple-600">
+                      <button 
+                        onClick={() => handleEdit(post)}
+                        className="text-gray-600 hover:text-purple-600"
+                      >
                         <Edit2 className="h-5 w-5" />
                       </button>
-                      <button className="text-gray-600 hover:text-red-600">
+                      <button 
+                        onClick={() => handleDelete(post.id)}
+                        className="text-gray-600 hover:text-red-600"
+                      >
                         <Trash2 className="h-5 w-5" />
                       </button>
                     </div>
@@ -202,6 +217,17 @@ export default function AdminBlog() {
           </table>
         </div>
       </div>
+
+      {/* Modal */}
+      <BlogPostModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingPost(null);
+        }}
+        onSubmit={handleSubmit}
+        post={editingPost}
+      />
     </div>
   );
 }
