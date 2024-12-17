@@ -1,17 +1,17 @@
 import { Link, useLocation } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Package, 
-  FileText, 
-  Briefcase, 
-  Users, 
+import {
+  LayoutDashboard,
+  Package,
+  FileText,
+  Briefcase,
+  Users,
   Settings,
-  X 
+  X
 } from 'lucide-react';
 
 export default function AdminSidebar({ isOpen, setIsOpen }) {
   const location = useLocation();
-  
+
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
     { name: 'Produits', href: '/admin/products', icon: Package },
@@ -25,7 +25,7 @@ export default function AdminSidebar({ isOpen, setIsOpen }) {
     <>
       {/* Overlay mobile */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-gray-600 bg-opacity-75 lg:hidden"
           onClick={() => setIsOpen(false)}
         />
@@ -33,7 +33,7 @@ export default function AdminSidebar({ isOpen, setIsOpen }) {
 
       {/* Sidebar */}
       <div className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform 
+        fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0 lg:static lg:inset-0 transition-transform duration-300
       `}>
@@ -43,7 +43,7 @@ export default function AdminSidebar({ isOpen, setIsOpen }) {
             <Link to="/admin" className="text-xl font-bold text-purple-600">
               SmartLimb Admin
             </Link>
-            <button 
+            <button
               onClick={() => setIsOpen(false)}
               className="lg:hidden"
             >
@@ -56,15 +56,15 @@ export default function AdminSidebar({ isOpen, setIsOpen }) {
             {navigation.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.href;
-              
+
               return (
                 <Link
                   key={item.name}
                   to={item.href}
                   className={`
                     flex items-center px-4 py-2 text-sm font-medium rounded-lg
-                    ${isActive 
-                      ? 'bg-purple-50 text-purple-600' 
+                    ${isActive
+                      ? 'bg-purple-50 text-purple-600'
                       : 'text-gray-600 hover:bg-gray-50'}
                   `}
                 >
