@@ -1,38 +1,41 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Plus, 
-  Search, 
-  Edit2, 
-  Trash2,
-  Mail,
-  Phone,
-  Filter
-} from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Mail, Phone, Filter } from 'lucide-react';
+import { useAdmin } from '../../contexts/AdminContext';
+import TeamMemberModal from '../../components/admin/modals/TeamMemberModal';
 
 export default function AdminTeam() {
-  const [selectedMembers, setSelectedMembers] = useState([]);
-  
-  const team = [
-    {
-      id: 1,
-      name: "Ibrahim Mahamadou",
-      role: "Co-fondateur & Directeur Technique",
-      department: "Direction",
-      email: "ibrahim@smartlimb.com",
-      phone: "+227 87 72 75 01",
-      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80"
-    },
-    {
-      id: 2,
-      name: "Aïcha Souleymane",
-      role: "Co-fondatrice & Directrice IA",
-      department: "R&D",
-      email: "aicha@smartlimb.com",
-      phone: "+227 87 72 75 02",
-      image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80"
+  const { team, addTeamMember, updateTeamMember, deleteTeamMember } = useAdmin();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingMember, setEditingMember] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const handleEdit = (member) => {
+    setEditingMember(member);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = (id) => {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce membre ?')) {
+      deleteTeamMember(id);
     }
-  ];
+  };
+
+  const handleSubmit = (formData) => {
+    if (editingMember) {
+      updateTeamMember(editingMember.id, formData);
+    } else {
+      addTeamMember(formData);
+    }
+    setIsModalOpen(false);
+    setEditingMember(null);
+  };
+
+  const filteredTeam = team.filter(member =>
+    member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    member.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    member.department.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="space-y-8">
@@ -44,7 +47,13 @@ export default function AdminTeam() {
             Gérez les membres de l'équipe
           </p>
         </div>
-        <button className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-purple-700">
+        <button 
+          onClick={() => {
+            setEditingMember(null);
+            setIsModalOpen(true);
+          }}
+          className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-purple-700"
+        >
           <Plus className="h-5 w-5 mr-2" />
           Ajouter un membre
         </button>
@@ -59,6 +68,8 @@ export default function AdminTeam() {
               <input
                 type="text"
                 placeholder="Rechercher un membre..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
@@ -74,7 +85,7 @@ export default function AdminTeam() {
 
       {/* Liste des membres */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {team.map((member, index) => (
+        {filteredTeam.map((member, index) => (
           <motion.div
             key={member.id}
             initial={{ opacity: 0, y: 20 }}
@@ -107,10 +118,16 @@ export default function AdminTeam() {
               </div>
 
               <div className="mt-6 flex justify-end space-x-3">
-                <button className="text-gray-600 hover:text-purple-600">
+                <button 
+                  onClick={() => handleEdit(member)}
+                  className="text-gray-600 hover:text-purple-600"
+                >
                   <Edit2 className="h-5 w-5" />
                 </button>
-                <button className="text-gray-600 hover:text-red-600">
+                <button 
+                  onClick={() => handleDelete(member.id)}
+                  className="text-gray-600 hover:text-red-600"
+                >
                   <Trash2 className="h-5 w-5" />
                 </button>
               </div>
@@ -118,6 +135,17 @@ export default function AdminTeam() {
           </motion.div>
         ))}
       </div>
+
+      {/* Modal */}
+      <TeamMemberModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingMember(null);
+        }}
+        onSubmit={handleSubmit}
+        member={editingMember}
+      />
     </div>
   );
 }
