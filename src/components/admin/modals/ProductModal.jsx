@@ -13,6 +13,14 @@ export default function ProductModal({ isOpen, onClose, onSubmit, product }) {
   useEffect(() => {
     if (product) {
       setFormData(product);
+    } else {
+      setFormData({
+        name: '',
+        category: '',
+        price: '',
+        status: '',
+        image: ''
+      });
     }
   }, [product]);
 
