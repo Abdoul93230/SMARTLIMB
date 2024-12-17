@@ -34,7 +34,8 @@ export function AdminProvider({ children }) {
       date: "15 Mars 2024",
       views: "1.2k",
       comments: 23,
-      image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80"
+      image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80",
+      content: "Contenu de l'article..."
     },
     {
       id: 2,
@@ -45,7 +46,8 @@ export function AdminProvider({ children }) {
       date: "10 Mars 2024",
       views: "956",
       comments: 15,
-      image: "https://images.unsplash.com/photo-1587620962725-abab7fe55159?auto=format&fit=crop&q=80"
+      image: "https://images.unsplash.com/photo-1587620962725-abab7fe55159?auto=format&fit=crop&q=80",
+      content: "Contenu de l'article..."
     }
   ]);
 
@@ -59,7 +61,8 @@ export function AdminProvider({ children }) {
       department: "R&D",
       applications: 12,
       status: "Actif",
-      posted: "15 Mars 2024"
+      posted: "15 Mars 2024",
+      description: "Description du poste..."
     },
     {
       id: 2,
@@ -69,7 +72,8 @@ export function AdminProvider({ children }) {
       department: "Tech",
       applications: 8,
       status: "Actif",
-      posted: "10 Mars 2024"
+      posted: "10 Mars 2024",
+      description: "Description du poste..."
     }
   ]);
 
@@ -95,9 +99,31 @@ export function AdminProvider({ children }) {
     }
   ]);
 
+  // État pour les paramètres
+  const [settings, setSettings] = useState({
+    general: {
+      siteName: "SmartLimb",
+      description: "Innovation technologique au service de l'humanité",
+      language: "Français"
+    },
+    contact: {
+      email: "contact@smartlimb.com",
+      phone: "+227 87 72 75 01",
+      address: "Niamey, Niger"
+    },
+    notifications: {
+      newApplications: true,
+      newComments: false
+    }
+  });
+
   // Fonctions pour gérer les produits
   const addProduct = (product) => {
-    setProducts([...products, { ...product, id: products.length + 1 }]);
+    const newProduct = {
+      ...product,
+      id: products.length + 1
+    };
+    setProducts([...products, newProduct]);
   };
 
   const updateProduct = (id, updatedProduct) => {
@@ -110,7 +136,18 @@ export function AdminProvider({ children }) {
 
   // Fonctions pour gérer les articles de blog
   const addBlogPost = (post) => {
-    setBlogPosts([...blogPosts, { ...post, id: blogPosts.length + 1 }]);
+    const newPost = {
+      ...post,
+      id: blogPosts.length + 1,
+      date: new Date().toLocaleDateString('fr-FR', { 
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      }),
+      views: "0",
+      comments: 0
+    };
+    setBlogPosts([...blogPosts, newPost]);
   };
 
   const updateBlogPost = (id, updatedPost) => {
@@ -123,7 +160,17 @@ export function AdminProvider({ children }) {
 
   // Fonctions pour gérer les offres d'emploi
   const addJob = (job) => {
-    setJobs([...jobs, { ...job, id: jobs.length + 1 }]);
+    const newJob = {
+      ...job,
+      id: jobs.length + 1,
+      applications: 0,
+      posted: new Date().toLocaleDateString('fr-FR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
+    };
+    setJobs([...jobs, newJob]);
   };
 
   const updateJob = (id, updatedJob) => {
@@ -136,7 +183,11 @@ export function AdminProvider({ children }) {
 
   // Fonctions pour gérer l'équipe
   const addTeamMember = (member) => {
-    setTeam([...team, { ...member, id: team.length + 1 }]);
+    const newMember = {
+      ...member,
+      id: team.length + 1
+    };
+    setTeam([...team, newMember]);
   };
 
   const updateTeamMember = (id, updatedMember) => {
@@ -147,12 +198,18 @@ export function AdminProvider({ children }) {
     setTeam(team.filter(m => m.id !== id));
   };
 
+  // Fonction pour mettre à jour les paramètres
+  const updateSettings = (newSettings) => {
+    setSettings(newSettings);
+  };
+
   return (
     <AdminContext.Provider value={{
       products,
       blogPosts,
       jobs,
       team,
+      settings,
       addProduct,
       updateProduct,
       deleteProduct,
@@ -164,7 +221,8 @@ export function AdminProvider({ children }) {
       deleteJob,
       addTeamMember,
       updateTeamMember,
-      deleteTeamMember
+      deleteTeamMember,
+      updateSettings
     }}>
       {children}
     </AdminContext.Provider>
